@@ -10,7 +10,10 @@ namespace legged
 bool BridgeHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
 {
   root_nh.setParam("gsmp_controller_switch", "null");
-  int ec_slavecount = EtherCAT_Init("enp45s0");
+
+  odom_sub_ = root_nh.subscribe("/imu/data", 1, &BridgeHW::OdomCallBack, this);
+
+  int ec_slavecount = EtherCAT_Init("enp86s0");
   std::cout << "开始EtherCAT初始化" << std::endl;
   if (ec_slavecount <= 0)
   {
@@ -42,16 +45,28 @@ void BridgeHW::read(const ros::Time& time, const ros::Duration& period)
     jointData_[i].tau_ = motorDate_recv[i].tau_ * directionMotor_[i];
   }
 
-  imuData_.ori[0] = imuData_recv.quat_float[2];          
-  imuData_.ori[1] = -imuData_recv.quat_float[1];
-  imuData_.ori[2] = imuData_recv.quat_float[3];
-  imuData_.ori[3] = imuData_recv.quat_float[0];
-  imuData_.angular_vel[0] = imuData_recv.gyro_float[1];  
-  imuData_.angular_vel[1] = -imuData_recv.gyro_float[0];
-  imuData_.angular_vel[2] = imuData_recv.gyro_float[2];
-  imuData_.linear_acc[0] = imuData_recv.accel_float[1];   
-  imuData_.linear_acc[1] = -imuData_recv.accel_float[0];
-  imuData_.linear_acc[2] = imuData_recv.accel_float[2];
+  // imuData_.ori[0] = imuData_recv.quat_float[2];          
+  // imuData_.ori[1] = -imuData_recv.quat_float[1];
+  // imuData_.ori[2] = imuData_recv.quat_float[3];
+  // imuData_.ori[3] = imuData_recv.quat_float[0];
+  // imuData_.angular_vel[0] = imuData_recv.gyro_float[1];  
+  // imuData_.angular_vel[1] = -imuData_recv.gyro_float[0];
+  // imuData_.angular_vel[2] = imuData_recv.gyro_float[2];
+  // imuData_.linear_acc[0] = imuData_recv.accel_float[1];   
+  // imuData_.linear_acc[1] = -imuData_recv.accel_float[0];
+  // imuData_.linear_acc[2] = imuData_recv.accel_float[2];
+
+
+  imuData_.ori[0] = yesenceIMU_.orientation.x;          
+  imuData_.ori[1] = yesenceIMU_.orientation.y;
+  imuData_.ori[2] = yesenceIMU_.orientation.z;
+  imuData_.ori[3] = yesenceIMU_.orientation.w;
+  imuData_.angular_vel[0] = yesenceIMU_.angular_velocity.x;  
+  imuData_.angular_vel[1] = yesenceIMU_.angular_velocity.y;
+  imuData_.angular_vel[2] = yesenceIMU_.angular_velocity.z;
+  imuData_.linear_acc[0] = yesenceIMU_.linear_acceleration.x;   
+  imuData_.linear_acc[1] = yesenceIMU_.linear_acceleration.y;
+  imuData_.linear_acc[2] = yesenceIMU_.linear_acceleration.z;
 
   std::vector<std::string> names = hybridJointInterface_.getNames();
   for (const auto& name : names)
