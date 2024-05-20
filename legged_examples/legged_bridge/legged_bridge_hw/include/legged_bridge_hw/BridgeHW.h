@@ -114,6 +114,13 @@ private:
   YKSMotorData yksSendcmdzero_[12] = {};
   YKSMotorData yksSendcmd_[12];
   float transform_CurrentPos[12] = { 0 };
+  sensor_msgs::Imu yesenceIMU_;
+  ros::Subscriber odom_sub_;
+
+  void OdomCallBack(const sensor_msgs::Imu::ConstPtr &odom)
+  {
+    yesenceIMU_ = *odom;
+  }
 
   const std::vector<int> directionMotor_{ 1, -1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1 };
 
